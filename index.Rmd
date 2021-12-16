@@ -26,7 +26,7 @@ background-size: contain
 
 <style type="text/css">
 .remark-slide-content{
-font-size: 30px;
+font-size: 32px;
 
 }
 code.r{
@@ -114,11 +114,118 @@ CMStatistics 2021
 .pull-right[<img src="plots/4D_slice.png" width="49%">]
 
 ---
-# Slice tour
+# Combining sectioning and projections
 
-The slice tour uses the **orthogonal distance** of each data point from a centered projection plane to define subsets of the data. Points close to the plane are **highlighted** in each projected view and can be compared to the overall (projected) distribution of points.
+
+**Sectioning** in visualization means that we select a subset of points that are kept or **highlighted** in a view of the data. The subset is generally defined by a set of **inequality conditions**.
+
+Combining projections and sections of the data can provide the viewer with new insights, as discussed in *Furnas and Buja (1994)*. The combination is referred to as **prosections** and it was shown how they can be used to determine the intrinsic dimensionality of a distribution.
+
+More generally sectioning can be useful to reveal features that are hidden in all projections of the data, but typically relies on user interaction (**linked brushing**). However, if we can define a systematic approach to sectioning we could also optimize an index function to identify interesting sections: **section pursuit**.
+
+In our approach we will use **slices**, a special type of sections that is defined based on projections of the data. The method was first defined in the context of animated visualizations using the grand tour, and was first described in *UL, Cook, Valencia (2019)*.
+---
+# Slicing
+
+We can define sections based on projections of the data: a **slice** is using the **orthogonal distance** of each data point from a centered projection plane to define a section. Points close to the plane are **highlighted** in the projected view and can be compared to the overall (projected) distribution of points.
 
 .center[<img src="plots/slice.png" width="60%">]
+
+---
+# What makes a slice interesting?
+
+A first approach to **section pursuit** is therefore to optimize a section pursuit index function over all possible **slices** of the data. If we keep the projections centered through the mean, and the slice thickness fixed, this means we are optimizing over all possible projections and can use methods from **projection pursuit** in combination with information about the orthogonal distances.
+
+One approach would be to directly plug in index functions from the projection pursuit literature, but compute them only for the points inside the slice.
+
+However, in this case we have a direct comparison: how is the distribution inside the slice different from the projected distribution? An interesting slice would be one that reveals a difference between the two!
+
+For this comparison we will build on the proposed decomposition proposed in *Gous and Buja (2012)*.
+
+---
+# Notation
+
+- The projected data points are computed as $Y=X\cdot A$, where $X$ is an $n\times p$ data matrix, $A$ is a $p\times d$ (orthonormal) basis for the $d$-dimensional space onto which the data is being projected
+- To generate a 2-dimensional slice we compute the orthogonal distance between every point and the plane (defined by $A = (\mathbf{a}_1, \mathbf{a}_2)$) as the Euclidean norm
+\begin{equation}
+h_i = ||\mathbf{x}_i - (\mathbf{x}_i\cdot \mathbf{a}_1) \mathbf{a}_1 - (\mathbf{x}_i\cdot \mathbf{a}_2) \mathbf{a}_2||.
+\end{equation}
+- Observations are considered inside the slice if $h_i < h$.
+- We denote the set of points inside the slice $S$, and the set of points outside the slice $C$.
+- These are separately binned into $K$ bins: $S_{k}=\sum_{i} I(Y_i \in b_{k})I(h_i < h)$ and $C_{k}=\sum_{i} I(Y_i \in b_{k})I(h_i \geq h)$
+- The relative counts are denoted $s_k = S_k / \sum_i S_i$ and $c_k = C_k / \sum_i C_i$
+
+---
+# Index definition
+
+With the introduced notation we define a set of index functions as
+
+\begin{equation}
+I_A^{low} = \sum_{k}\left[\left(c_{k}-s_{k}\right)\right]_{>\varepsilon},
+\label{eq:index}
+\end{equation}
+
+\begin{equation}
+I_A^{up} = \sum_{k}\left[\left(s_{k}-c_{k}\right)\right]_{>\varepsilon}
+\label{eq:indexup}
+\end{equation}
+
+where we only sum up positive differences above the threshold value $\varepsilon$ (based on the estimated size of sampling fluctuations).
+
+We also consider generalizing the definition to
+
+\begin{equation}
+I_A^{low} = \sum_{k}w_{k}\left(\left[c_{k}^{1/q}-s_{k}^{1/q}\right]_{>\varepsilon}\right)^{q}
+\label{eq:index2}
+\end{equation}
+
+---
+# Practial considerations
+
+When computing this index in practice, we will see systematic differences between $S$ and $C$ that depend on the underlying distributions. To proceed we will make a few assumptions:
+
+- The data shall be distributed inside a hypersphere (no systematic differences based on from which angle we are looking at it)
+- In the absence of structure we will assume points to be distributed uniformly within the sphere (capturing volume effects rather than assuming specific structure, one alternative could be a multivariate normal distribution instead)
+- We will use polar binning in the 2D projection plane (in $r$ and $\theta$)
+
+With these assumptions we can study the expected differences between the two distributions, and define a **bin-wise** reweighting scheme. The weights are computed separately for $S$ and $C$ and for each radial bin. After reweighting we expect points to be uniformly distributed across the $K$ bins (assuming they were uniformly distributed in the $p$-dimensional hypersphere).
+
+---
+# Simulated data example
+
+To illustrate the method we simulated a large sample of points inside a hypersphere, but with *holes* that are defined through hyperspherical harmonics, such that some slices are interesting and others are not. 
+
+.center[<img src="plots/allSlices-1.png" width="70%">]
+
+---
+# Reweighting in action
+
+We can compare the binned distributions with and without reweighting to see why this is important, for example looking at S1 from set B:
+
+.center[<img src="plots/data_and_densities-1.png" width="60%">]
+
+---
+# Tracing the index
+
+---
+# Tracing the generalized index (q=2)
+
+---
+# Example application
+
+2HDM example?
+
+---
+# Summary and Outlook
+
+.largeish[
+- We can define **section pursuit** using slices, and optimizing an index that compares the projected distribution to that inside the slice.
+- In doing so we make assumptions about the underlying distribution to adjust for expected differences (and estimate the expected fluctuations $\varepsilon$).
+- One application is to find interesting slices to better understand non-linear decision boundaries or inequality conditions.
+- The current implementation is limited to datasets with large sample size and intermediate number of dimensions (up to seven dimensions were considered so far).
+- There is a lot of room to develop additional index functions for section pursuit and further develop the proposed generalization
+- Alternative definitions of sectioning should also be considered to generalize the method.
+]
 
 
 ---
@@ -131,7 +238,7 @@ background-size: contain
 
 <br>
 
-This is joint work done in collaboration with **Dianne Cook** and **Stuart Lee**.
+This is joint work done in collaboration with **Dianne Cook**, **German Valencia** and **Andreas Buja**.
 
 
 My slides are made using `RMarkdown`, `xaringan` and the `ninjutsu` theme.
