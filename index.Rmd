@@ -230,24 +230,21 @@ We can use section pursuit to better understand non-linear boundaries in high-di
 
 We start by **sampling** points parameter space: points are drawn uniformly within a p-dimensional hypersphere. We then **evaluate** the model predictions or inequality conditions for all samples, and create **hollow** regions by dropping points from one class, or where the inequality condition is not met.
 
-**Example**: in physics we have equations that connect model parameter to physical observables such as particle masses. Requiring that these masses are real numbers will limit the allowed region of parameter space, but the complexity of the equations will often obscure these relations. 
+**Example**: Classification problem from physics (PDFSense data), with three groups in six dimensions. The three groups approximately share the same mean, but extend in different directions of parameter space. When fitting a SVM with radial kernel we find that across most of the parameter space we predict one of the three groups. Where are sections with predictions for the other two?
 
 ---
 # Example application
 
-We have considered one such example: which parts of the parameter space for a model with two Higgs doublets when we require real values for all masses?
-
-- The model has 7 parameters, these are sampled within a hypersphere
-- There are four inequality conditions that need to be satisfied, points that do not meet the conditions are removed
-- We then perform section pursuit to find slices revealing holes in the distribution: these are regions of parameter space that are in conflict with the inequality conditions
-- We can look at these slices showing the full sample, and highlighting the points that were in conflict with the conditions
-
-
+- Use the `classifly` package to sample in a grid across the 6D parameter space and evaluate predictions for all points.
+- Shave points to go from a hypercube to a hypersphere.
+- Input to section pursuit is the set of points for which the prediction is the most commonly predicted class (filling most of the hypersphere).
+- Use section pursuit to identify a slice where this set of points shows a large *hole* - we get a larger fraction of alternative predictions in this section of the parameter space.
+- Show all samples with their predicted class in this slice.
 
 ---
 # Example application
 
-.center[<img src="plots/thdm-1.png" width="70%">]
+.center[<img src="plots/pdffit-1.png" width="80%">]
 
 ---
 # Summary and Outlook
@@ -257,7 +254,7 @@ We have considered one such example: which parts of the parameter space for a mo
 - In doing so we make assumptions about the underlying distribution to adjust for expected differences (and estimate the expected fluctuations $\varepsilon$).
 - One application is to find interesting slices to better understand non-linear decision boundaries or inequality conditions.
 - The current implementation is limited to datasets with large sample size and intermediate number of dimensions (up to seven dimensions were considered so far).
-- There is a lot of room to develop additional index functions for section pursuit and further develop the proposed generalization
+- There is a lot of room to develop additional index functions for section pursuit and further develop the proposed generalization, and for better optimization methods.
 - Alternative definitions of sectioning should also be considered to generalize the method.
 ]
 
@@ -276,4 +273,4 @@ This is joint work done in collaboration with **Dianne Cook**, **German Valencia
 
 
 My slides are made using `RMarkdown`, `xaringan` and the `ninjutsu` theme.
-The main `R` packages used are `tourr` and the `tidyverse`.
+The main `R` packages used are `tourr`, `classifly` and the `tidyverse`.
