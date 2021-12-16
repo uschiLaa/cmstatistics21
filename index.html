@@ -7,7 +7,6 @@
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/remark-css/kunoichi.css" rel="stylesheet" />
     <link href="libs/remark-css/ninjutsu.css" rel="stylesheet" />
-    <link rel="stylesheet" href="assets/monash-fonts.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
@@ -57,9 +56,9 @@ code.r{
 
 &lt;br&gt;
 
-## **Section Pursuit**
+# **Section Pursuit**
 
-**Building on projection pursuit and slicing**
+**Based on arXiv:2004.13327**
 
 .my-gray[
 .large[**Ursula Laa**]
@@ -180,13 +179,49 @@ We can compare the binned distributions with and without reweighting to see why 
 ---
 # Tracing the index
 
+To understand the index performance we can show how the index value changes as we slowly rotate the angle of the projection away from the most or least informative slice:
+
+- Start by randomly selecting a large number directions along which we move away from the starting plane.
+- Use geodesic interpolation (as available in the `tourr` package) to interpolate projections along those directions, up to a maximum angle `\(\alpha\)`.
+- Evaluate the index value for each slice along the interpolated path.
+- The **topotrace plot** shows how the index value changes with `\(\alpha\)`, we can see characteristics of the index function (smoothness, squint angle) and if there are local maxima or ridges for the considered distribution.
+
+We can show the topotrace plot for our simulated data sets A and B, and starting from the informative slice S1, or the uninformative slice S2.
+
 ---
-# Tracing the generalized index (q=2)
+# Tracing the index
+
+.center[&lt;img src="plots/traces_q1-1.png" width="75%"&gt;]
+
 
 ---
 # Example application
 
-2HDM example?
+We can use section pursuit to better understand non-linear boundaries in high-dimensional spaces:
+
+- Classification boundaries, for example from a SVM with polynomial or radial kernel
+- Boundaries from inequality conditions, for example physically meaningful regions in a parameter space
+
+We start by **sampling** points parameter space: points are drawn uniformly within a p-dimensional hypersphere. We then **evaluate** the model predictions or inequality conditions for all samples, and create **hollow** regions by dropping points from one class, or where the inequality condition is not met.
+
+**Example**: in physics we have equations that connect model parameter to physical observables such as particle masses. Requiring that these masses are real numbers will limit the allowed region of parameter space, but the complexity of the equations will often obscure these relations. 
+
+---
+# Example application
+
+We have considered one such example: which parts of the parameter space for a model with two Higgs doublets when we require real values for all masses?
+
+- The model has 7 parameters, these are sampled within a hypersphere
+- There are four inequality conditions that need to be satisfied, points that do not meet the conditions are removed
+- We then perform section pursuit to find slices revealing holes in the distribution: these are regions of parameter space that are in conflict with the inequality conditions
+- We can look at these slices showing the full sample, and highlighting the points that were in conflict with the conditions
+
+
+
+---
+# Example application
+
+.center[&lt;img src="plots/thdm-1.png" width="70%"&gt;]
 
 ---
 # Summary and Outlook
@@ -215,17 +250,10 @@ This is joint work done in collaboration with **Dianne Cook**, **German Valencia
 
 
 My slides are made using `RMarkdown`, `xaringan` and the `ninjutsu` theme.
-The main `R` packages used are `tourr`, `tidyverse`, `plotly`, `geozoo`.
-
----
-
-
-
+The main `R` packages used are `tourr` and the `tidyverse`.
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
-<script src="libs/jquery/jquery.min.js"></script>
-<script src="libs/slides.js"></script>
 <script>var slideshow = remark.create({
 "highlightStyle": "github",
 "ratio": "16:9",
