@@ -106,12 +106,9 @@ CMStatistics 2021
 ---
 # What is hidden in projections?
 
-.center[<img src="plots/4D_proj.png" width="49%">]
-
----
-# What is hidden in projections?
-
-.center[<img src="plots/4D_proj.png" width="49%"> <img src="plots/4D_slice.png" width="49%">]
+.pull-left[<img src="plots/4d_proj.png" width="49%">]
+--
+.pull-right[ <img src="plots/4d_slice.png" width="49%">]
 
 ---
 # Combining sectioning and projections
